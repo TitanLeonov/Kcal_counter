@@ -1,7 +1,7 @@
 import telebot
 import calc
 import sqlite3
-
+from spellchecker import SpellChecker
 
 con = sqlite3.connect("food.db", check_same_thread=False)
 cur = con.cursor()
@@ -14,6 +14,8 @@ eaten_food = []
 
 global parametrs
 parametrs = []
+
+spell = SpellChecker(language="ru")
 
 # global gender, age, weight, height, kf, mode, bmr_mode, bmr
 # gender = ''
@@ -546,8 +548,29 @@ def handle_text(message):
 
     else:
         print(message.chat.id)
-        axc = Search_name(str(message.text).lower())
-        print(axc)
+        s = message.text
+    layout = dict(zip(map(ord, "qwertyuiop[]asdfghjkl;'zxcvbnm,./`"
+                           'QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?~'),
+                           "йцукенгшщзхъфывапролджэячсмитьбю.ё"
+                           'ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ,Ё'))
+    word1=f"{s}".translate(layout)
+    k=[]
+    
+    
+
+    misspelled = spell.unknown([f"{word1}"])
+
+    for word in misspelled:
+        a = spell.correction(word)
+        k.append(a)
+        
+    if len(k) == 0:
+        axc = Search_name(str(word1).lower())
+    
+    else:
+        w = k[0]
+        axc = Search_name(str(w).lower())
+    print(axc)
         i = 1
         for example in axc:
             bot.send_message(message.chat.id, f'Название: {example[0]}\nккал: {example[1]}\n Белки: {example[2]}\nЖиры: {example[3]}\nУглеводы: {example[4]}\n НОМЕР: {i}')
